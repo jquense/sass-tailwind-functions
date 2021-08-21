@@ -17,13 +17,12 @@ describe('theme', () => {
   it('works', () => {
     const result = render(css`
       .a {
-        border: #{theme('array', $list-separator: ' ')};
+        border: theme('array', $list-separator: ' ');
 
         color: transparentize(theme('colors.gray.100'), 0.5);
+        padding: theme('padding.3') + 3;
+        height: theme('padding.missing', 1px) + 3;
 
-        padding: #{theme('padding.3') + 3};
-
-        height: #{theme('padding.fasf', 1px) + 3};
         // should be removed in output
         height: #{theme('padding.fasf', null)};
       }
