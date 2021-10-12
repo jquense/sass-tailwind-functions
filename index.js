@@ -1,6 +1,7 @@
 // @ts-expect-error no types
 const colorConvert = require('color-convert');
 const colorString = require('color-string');
+const toPath = require('lodash/toPath');
 const SassUtils = require('node-sass-utils');
 const buildMediaQuery =
   require('tailwindcss/lib/util/buildMediaQuery').default;
@@ -13,6 +14,15 @@ const EMPTY = '@@EMPTY@@';
 module.exports = (sass, tailwindConfig) => {
   const sassUtils = SassUtils(sass);
   const { theme } = resolveConfig(require(tailwindConfig));
+
+  const themeTransforms = {
+    fontSize(value) {
+      return Array.isArray(value) ? value[0] : value;
+    },
+    outline(value) {
+      return Array.isArray(value) ? value[0] : value;
+    },
+  };
 
   const convertString = (result) => {
     let color;
@@ -71,19 +81,25 @@ module.exports = (sass, tailwindConfig) => {
 
   const themeFn = (keys, dflt, listSep) => {
     sassUtils.assertType(listSep, 'string');
-    let path = keys.getValue().split('.');
+
     const isComma = listSep.getValue().trim() === ',';
 
     const hasDefault = dflt.getValue?.() !== EMPTY;
+
+    let path;
     if (sassUtils.isType(keys, 'list')) {
       path = sassUtils.castToJs(keys);
     } else {
-      path = keys.getValue().split('.');
+      path = toPath(keys.getValue());
     }
 
     let current;
     let itemValue = theme;
     const pristinePath = [...path];
+    const themeSection = pristinePath[0];
+
+    const transform = themeTransforms[themeSection];
+
     while (itemValue && path.length) {
       current = path.shift();
 
@@ -111,6 +127,10 @@ module.exports = (sass, tailwindConfig) => {
             )} is not an object or array, and has no key: ${current}.`,
         );
       }
+    }
+
+    if (transform) {
+      itemValue = transform(itemValue);
     }
 
     if (itemValue == null) {

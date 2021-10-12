@@ -38,6 +38,37 @@ describe('theme', () => {
 `);
   });
 
+  it('transforms', () => {
+    const result = render(css`
+      .a {
+        font-size: theme('fontSize.base');
+        font-size: theme('fontSize.base[1].lineHeight');
+        outline: theme('outline.white');
+      }
+    `);
+
+    expect(result.css.toString()).toMatchInlineSnapshot(`
+".a {
+  font-size: 1rem;
+  font-size: 1.5rem;
+  outline: 2px;
+}"
+`);
+  });
+  it('allows a number of paths', () => {
+    const result = render(css`
+      .a {
+        font-size: theme((fontSize, 'base'));
+      }
+    `);
+
+    expect(result.css.toString()).toMatchInlineSnapshot(`
+".a {
+  font-size: 1rem;
+}"
+`);
+  });
+
   it('escapes', () => {
     const result = render(css`
       .square-#{e('0.5')} {
