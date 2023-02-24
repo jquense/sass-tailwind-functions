@@ -30,6 +30,9 @@ const result = sass.renderSync({
 bundlers like webpack, et all also allow passing options
 to sass, follow specific instuctions for each tool (e.g. sass-loader)
 
+You can also create functions for the [modern sass API](https://sass-lang.com/documentation/js-api/)
+by importing `sass-tailwind-functions/modern`.
+
 ## Usage
 
 If configured correctly both the `theme`, `screen` and `e` functions will
