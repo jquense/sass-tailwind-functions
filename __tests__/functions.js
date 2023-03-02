@@ -1,7 +1,6 @@
 const sass = require('sass');
 
 const sassThemeFn = require('../index');
-const sassThemeFnModern = require('../modern');
 
 const css = String.raw;
 
@@ -19,7 +18,7 @@ const renderMethods = {
   modern: (data) =>
     sass.compileString(data, {
       functions: {
-        ...sassThemeFnModern(
+        ...sassThemeFn(
           sass,
           require.resolve('../__fixtures__/tailwind.config'),
         ),

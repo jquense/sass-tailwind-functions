@@ -1,5 +1,6 @@
 // @ts-expect-error no types
 const toPath = require('lodash/toPath');
+const { toSass, fromSass } = require('sass-cast/legacy');
 const buildMediaQuery =
   require('tailwindcss/lib/util/buildMediaQuery').default;
 const escapeClassName =
@@ -8,8 +9,26 @@ const resolveConfig = require('tailwindcss/resolveConfig');
 
 const EMPTY = '@@EMPTY@@';
 
+const forceToString = (sassValue) => {
+  if (sassValue.getValue && !sassValue.getLength)
+    return sassValue.getValue().toString();
+  if (sassValue.dartValue) return sassValue.dartValue.toString();
+  return sassValue.toString();
+};
+
 module.exports = (sass, tailwindConfig) => {
   const { theme } = resolveConfig(require(tailwindConfig));
+
+  const assertString = (value, varName) => {
+    if (
+      !(value instanceof sass.types.String) &&
+      value.constructor.name !== 'sass.types.String'
+    )
+      throw new Error(
+        `Expected ${varName} to be a string, got ${forceToString(value)}`,
+      );
+    return value;
+  };
 
   const themeTransforms = {
     fontSize(value) {
@@ -20,21 +39,17 @@ module.exports = (sass, tailwindConfig) => {
     },
   };
 
-  const themeFn = ([$keys, $dflt, $listSep]) => {
-    // the non-legacy sass-cast methods depend on immutable js,
-    // included with any sass version that supports the modern api
-    // it shouldn't be required unless such a version is installed
-    const { toSass, fromSass } = require('sass-cast');
-
+  const themeFn = ($keys, $dflt, $listSep) => {
     const keys = fromSass($keys);
     const hasDefault = fromSass($dflt) !== EMPTY;
-    const listSep = $listSep.assertString('$list-separator').text;
+    const listSep = assertString($listSep, '$list-separator').getValue();
+    const isComma = listSep.trim() === ',';
 
     let path;
     if (Array.isArray(keys)) {
       path = keys;
     } else {
-      $keys.assertString('$keys');
+      assertString($keys, '$keys');
       path = toPath(keys);
     }
 
@@ -82,27 +97,27 @@ module.exports = (sass, tailwindConfig) => {
       return $dflt;
     }
 
-    let result = toSass(itemValue, {
+    const result = toSass(itemValue, {
       parseUnquotedStrings: true,
-      quotes: false,
+      quotes: null,
     });
-    if (result.separator && result.separator !== listSep)
-      result = new sass.SassList(result.asList, { separator: listSep });
+    if (result.getSeparator && result.getSeparator() !== listSep)
+      result.setSeparator(isComma);
 
     return result;
   };
 
-  function screenFn([$screen]) {
-    const screen = $screen.assertString('$screen').text;
+  function screenFn($screen) {
+    const screen = assertString($screen, '$screen').getValue();
     if (theme.screens[screen] === undefined) {
       throw new Error(`The '${screen}' screen does not exist in your theme.`);
     }
-    return new sass.SassString(buildMediaQuery(theme.screens[screen]));
+    return new sass.types.String(buildMediaQuery(theme.screens[screen]));
   }
 
   return {
     [`theme($keys, $defaultValue: "${EMPTY}", $list-separator: ",")`]: themeFn,
     'screen($screen)': screenFn,
-    'e($str)': ([str]) => new sass.SassString(escapeClassName(str.text)),
+    'e($str)': (str) => new sass.types.String(escapeClassName(str.getValue())),
   };
 };
