@@ -44,7 +44,7 @@ module.exports = (sass, tailwindConfig) => {
       return new sass.types.Color(...color);
     }
 
-    const numeric = result.match(/([0-9.]+)([a-zA-Z]*)/);
+    const numeric = result.match(/([0-9.]+)([a-zA-Z]*)$/);
 
     // If the string has a unit
     if (numeric) {

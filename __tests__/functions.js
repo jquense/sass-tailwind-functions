@@ -67,7 +67,7 @@ Object.entries(renderMethods).forEach(([api, render]) => {
 ".a {
   font-size: 1rem;
   font-size: 1.5rem;
-  outline: 2px;
+  outline: 2px dotted white;
 }"
 `);
       });
