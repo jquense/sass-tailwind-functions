@@ -13,7 +13,7 @@
     "lint": "4c lint src './*'",
     "release": "4c release",
     "tdd": "jest --watch",
-    "test": "yarn lint && jest",
+    "test": "yarn lint && for alias in sass sass-1.11; do echo \"\ntesting $alias\n\"; SASS_ALIAS=$alias jest; done",
     "testonly": "jest"
   },
   "publishConfig": {
@@ -51,6 +51,7 @@
     "lint-staged": "^11.0.0",
     "prettier": "^2.0.1",
     "sass": "^1.44",
+    "sass-1.11": "npm:sass@1.11.0",
     "tailwindcss": "^2.2.7"
   },
   "dependencies": {

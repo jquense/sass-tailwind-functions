@@ -27,6 +27,16 @@ const renderMethods = {
 };
 
 Object.entries(renderMethods).forEach(([api, render]) => {
+  try {
+    render('');
+  } catch (e) {
+    if (
+      api === 'modern' &&
+      e.message === 'sass.compileString is not a function'
+    )
+      return;
+    throw e;
+  }
   describe(api, () => {
     describe('theme', () => {
       it('works', () => {
