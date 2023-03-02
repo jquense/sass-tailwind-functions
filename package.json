@@ -59,6 +59,7 @@
     "sass-cast": "^0.5.2"
   },
   "peerDependencies": {
+    "sass": "^1.11.0",
     "tailwindcss": ">=2.2.7"
   }
 }
