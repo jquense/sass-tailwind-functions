@@ -30,8 +30,14 @@ const result = sass.renderSync({
 bundlers like webpack, et all also allow passing options
 to sass, follow specific instuctions for each tool (e.g. sass-loader)
 
-You can also create functions for the [modern sass API](https://sass-lang.com/documentation/js-api/)
-by importing `sass-tailwind-functions/modern`.
+The base export works with both the modern and legacy [sass
+APIs](https://sass-lang.com/documentation/js-api). You can also specify the one
+you need:
+
+```js
+const legacyFunctions = require('sass-tailwind-functions/legacy');
+const modernFunctions = require('sass-tailwind-functions/modern');
+```
 
 ## Usage
 
