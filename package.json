@@ -54,11 +54,8 @@
     "tailwindcss": "^2.2.7"
   },
   "dependencies": {
-    "color-convert": "^2.0.1",
-    "color-string": "^1.6.0",
     "lodash": "^4.17.21",
-    "node-sass-utils": "https://github.com/sass-eyeglass/node-sass-utils#cdf561fe0e70cc45a75879143060b388566e6065",
-    "sass-cast": "^0.5.1"
+    "sass-cast": "^0.5.2"
   },
   "peerDependencies": {
     "tailwindcss": ">=2.2.7"

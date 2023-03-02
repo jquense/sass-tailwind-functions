@@ -1,8 +1,6 @@
 // @ts-expect-error no types
-const colorConvert = require('color-convert');
-const colorString = require('color-string');
 const toPath = require('lodash/toPath');
-const SassUtils = require('node-sass-utils');
+const { toSass, fromSass } = require('sass-cast/legacy');
 const buildMediaQuery =
   require('tailwindcss/lib/util/buildMediaQuery').default;
 const escapeClassName =
@@ -11,9 +9,26 @@ const resolveConfig = require('tailwindcss/resolveConfig');
 
 const EMPTY = '@@EMPTY@@';
 
+const forceToString = (sassValue) => {
+  if (sassValue.getValue && !sassValue.getLength)
+    return sassValue.getValue().toString();
+  if (sassValue.dartValue) return sassValue.dartValue.toString();
+  return sassValue.toString();
+};
+
 module.exports = (sass, tailwindConfig) => {
-  const sassUtils = SassUtils(sass);
   const { theme } = resolveConfig(require(tailwindConfig));
+
+  const assertString = (value, varName) => {
+    if (
+      !(value instanceof sass.types.String) &&
+      value.constructor.name !== 'sass.types.String'
+    )
+      throw new Error(
+        `Expected ${varName} to be a string, got ${forceToString(value)}`,
+      );
+    return value;
+  };
 
   const themeTransforms = {
     fontSize(value) {
@@ -24,73 +39,18 @@ module.exports = (sass, tailwindConfig) => {
     },
   };
 
-  const convertString = (result) => {
-    let color;
-
-    if (result.startsWith('#')) {
-      color = colorConvert.hex.rgb(result);
-    }
-    if (result.startsWith('rgb')) {
-      color = colorString.get.rgb(result);
-    }
-    if (result.startsWith('hsl')) {
-      color = colorConvert.hsl.rgb(colorString.get.hsl(result));
-    }
-    if (result.startsWith('hwb')) {
-      color = colorConvert.hwb.rgb(colorString.get.hwb(result));
-    }
-
-    if (color) {
-      return new sass.types.Color(...color);
-    }
-
-    const numeric = result.match(/([0-9.]+)([a-zA-Z]*)$/);
-
-    // If the string has a unit
-    if (numeric) {
-      return sassUtils.castToSass(
-        new sassUtils.SassDimension(parseFloat(numeric[1]), numeric[2]),
-      );
-    }
-
-    return sassUtils.castToSass(result);
-  };
-
-  function convertToSass(themeValue, isComma = true) {
-    if (typeof themeValue === 'string') {
-      return convertString(themeValue);
-    }
-    if (Array.isArray(themeValue)) {
-      const list = sassUtils.castToSass(themeValue.map(convertToSass));
-      list.setSeparator(isComma);
-      return list;
-    }
-    if (themeValue == null) {
-      return sass.types.Null.NULL;
-    }
-    if (typeof themeValue === 'object') {
-      const result = {};
-      for (const [key, value] of Object.entries(themeValue)) {
-        result[key] = convertToSass(value);
-      }
-      return sassUtils.castToSass(result);
-    }
-
-    return sassUtils.castToSass(themeValue);
-  }
-
-  const themeFn = (keys, dflt, listSep) => {
-    sassUtils.assertType(listSep, 'string');
-
-    const isComma = listSep.getValue().trim() === ',';
-
-    const hasDefault = dflt.getValue?.() !== EMPTY;
+  const themeFn = ($keys, $dflt, $listSep) => {
+    const keys = fromSass($keys);
+    const hasDefault = fromSass($dflt) !== EMPTY;
+    const listSep = assertString($listSep, '$list-separator').getValue();
+    const isComma = listSep.trim() === ',';
 
     let path;
-    if (sassUtils.isType(keys, 'list')) {
-      path = sassUtils.castToJs(keys);
+    if (Array.isArray(keys)) {
+      path = keys;
     } else {
-      path = toPath(keys.getValue());
+      assertString($keys, '$keys');
+      path = toPath(keys);
     }
 
     let current;
@@ -109,7 +69,7 @@ module.exports = (sass, tailwindConfig) => {
           : itemValue[current];
 
         if (itemValue === undefined) {
-          if (hasDefault) return dflt;
+          if (hasDefault) return $dflt;
 
           throw new Error(
             `There is no theme value at ${pristinePath
@@ -118,7 +78,7 @@ module.exports = (sass, tailwindConfig) => {
           );
         }
       } else {
-        if (hasDefault) return dflt;
+        if (hasDefault) return $dflt;
         throw new Error(
           `The value at ${pristinePath
             .slice(0, pristinePath.indexOf(current))
@@ -134,16 +94,21 @@ module.exports = (sass, tailwindConfig) => {
     }
 
     if (itemValue == null) {
-      return dflt;
+      return $dflt;
     }
 
-    return convertToSass(itemValue, isComma);
+    const result = toSass(itemValue, {
+      parseUnquotedStrings: true,
+      quotes: null,
+    });
+    if (result.getSeparator && result.getSeparator() !== listSep)
+      result.setSeparator(isComma);
+
+    return result;
   };
 
-  function screenFn(breakpoint) {
-    sassUtils.assertType(breakpoint, 'string');
-
-    const screen = breakpoint.getValue();
+  function screenFn($screen) {
+    const screen = assertString($screen, '$screen').getValue();
     if (theme.screens[screen] === undefined) {
       throw new Error(`The '${screen}' screen does not exist in your theme.`);
     }
