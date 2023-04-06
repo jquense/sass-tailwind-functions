@@ -30,6 +30,15 @@ const result = sass.renderSync({
 bundlers like webpack, et all also allow passing options
 to sass, follow specific instuctions for each tool (e.g. sass-loader)
 
+The base export works with both the modern and legacy [sass
+APIs](https://sass-lang.com/documentation/js-api). You can also specify the one
+you need:
+
+```js
+const legacyFunctions = require('sass-tailwind-functions/legacy');
+const modernFunctions = require('sass-tailwind-functions/modern');
+```
+
 ## Usage
 
 If configured correctly both the `theme`, `screen` and `e` functions will
