@@ -52,7 +52,7 @@
     "prettier": "^2.0.1",
     "sass": "^1.44",
     "sass-1.11": "npm:sass@1.11.0",
-    "tailwindcss": "^2.2.7"
+    "tailwindcss": "^3.3.4"
   },
   "dependencies": {
     "lodash": "^4.17.21",
@@ -60,6 +60,6 @@
   },
   "peerDependencies": {
     "sass": "^1.11.0",
-    "tailwindcss": ">=2.2.7"
+    "tailwindcss": "^3.0.0"
   }
 }

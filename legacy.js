@@ -5,6 +5,7 @@ const buildMediaQuery =
   require('tailwindcss/lib/util/buildMediaQuery').default;
 const escapeClassName =
   require('tailwindcss/lib/util/escapeClassName').default;
+const { normalizeScreens } = require('tailwindcss/lib/util/normalizeScreens');
 const resolveConfig = require('tailwindcss/resolveConfig');
 
 const EMPTY = '@@EMPTY@@';
@@ -109,10 +110,12 @@ module.exports = (sass, tailwindConfig) => {
 
   function screenFn($screen) {
     const screen = assertString($screen, '$screen').getValue();
-    if (theme.screens[screen] === undefined) {
+    const screens = normalizeScreens(theme.screens);
+    const screenDefinition = screens.find(({ name }) => name === screen);
+    if (!screenDefinition) {
       throw new Error(`The '${screen}' screen does not exist in your theme.`);
     }
-    return new sass.types.String(buildMediaQuery(theme.screens[screen]));
+    return new sass.types.String(buildMediaQuery(screenDefinition));
   }
 
   return {
