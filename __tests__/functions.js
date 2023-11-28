@@ -68,7 +68,7 @@ Object.entries(renderMethods).forEach(([api, render]) => {
           .a {
             font-size: theme('fontSize.base');
             font-size: theme('fontSize.base[1].lineHeight');
-            outline: theme('outline.white');
+            outline: 2px dotted theme('colors.white');
           }
         `);
 
@@ -76,7 +76,7 @@ Object.entries(renderMethods).forEach(([api, render]) => {
 ".a {
   font-size: 1rem;
   font-size: 1.5rem;
-  outline: 2px dotted white;
+  outline: 2px dotted #fff;
 }"
 `);
       });
