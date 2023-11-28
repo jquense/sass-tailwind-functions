@@ -1,3 +1,18 @@
+# [2.0.0](https://github.com/jquense/sass-tailwind-functions/compare/v1.1.0...v2.0.0) (2023-11-28)
+
+
+* fix!: update screen function to work with tailwind v3 ([906c520](https://github.com/jquense/sass-tailwind-functions/commit/906c52073a2fa8431f02c54c177ff0517590a4bb))
+
+
+### BREAKING CHANGES
+
+* this makes the screen function incompatible with
+tailwind v2, as the buildMediaQuery api has changed.
+
+
+
+
+
 # [1.1.0](https://github.com/jquense/sass-tailwind-functions/compare/v1.0.2...v1.1.0) (2023-04-06)
 
 
